@@ -1,0 +1,13 @@
+"Edlib" is a aligning tool to compare two sequences
+It is unsed in omicia_scripts by RefSeq/refseq_differ.py
+to find differences between a Refseq seqence and the GRCh37 reference.
+
+
+Compile instructions:
+
+cd build
+cmake -D CMAKE_BUILD_TYPE=Release ..
+make
+
+to test the build run:
+bin/runTests
