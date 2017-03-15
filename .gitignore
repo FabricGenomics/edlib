@@ -19,6 +19,9 @@ build/*
 # Documentation
 docs/
 
+# CLION STUFF
+.idea/
+
 callgrind.out.*
 
 core
