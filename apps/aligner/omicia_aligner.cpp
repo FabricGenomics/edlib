@@ -13,29 +13,45 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <queue>
 #include <stdio.h>
 #include "edlib.h"
+
 
 using namespace std;
 
 int main() {
-  string line;
-  getline(cin, line);
-  
-  istringstream iss(line);
-  string reference = "";
-  string query = "";
-  
-  iss >> reference;
-  iss >> query;
+    string line;
+    string stdin_content;
+    string reference, query;
+    stdin_content = "";
 
-  // printf("query: %s\n", query.c_str());
-  // printf("reference: %s\n", reference.c_str()); 
-  EdlibAlignResult result = edlibAlign(query.c_str(), query.length(), reference.c_str(), reference.length(), edlibNewAlignConfig(42, EDLIB_MODE_HW, EDLIB_TASK_PATH));
-  // printf("distance %d\n", result.editDistance);
-  char* cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_EXTENDED);
-  printf("%s\n", cigar);
-  free(cigar);
-  edlibFreeAlignResult(result);
+
+    int numBestSeqs = 0;
+    int kArg = -1;
+
+
+    while (getline(cin, line)) {
+        if (line.length() == 0)
+            break;
+        stdin_content += line;
+
+    }
+    istringstream iss(stdin_content);
+    iss >> reference;
+    iss >> query;
+
+    EdlibAlignResult result = edlibAlign(query.c_str(), query.length(), reference.c_str(), reference.length(),
+                                         edlibNewAlignConfig(-1, EDLIB_MODE_HW, EDLIB_TASK_PATH));
+
+    // printf("distance %d\n", result.editDistance);
+    char *cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_EXTENDED);
+
+//        cout << reference << endl;
+//        cout << query << endl;
+
+    printf("%s\n", cigar);
+    free(cigar);
+    edlibFreeAlignResult(result);
 }
 
