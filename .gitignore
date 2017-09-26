@@ -16,6 +16,7 @@
 build/*
 !build/README.md
 
+
 # Documentation
 docs/
 
@@ -25,5 +26,5 @@ docs/
 callgrind.out.*
 
 core
-
+.DS_Store
 TAGS

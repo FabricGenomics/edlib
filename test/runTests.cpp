@@ -18,7 +18,7 @@ int calcEditDistanceSimple(const char* query, int queryLength,
                            int** positions, int* numPositions);
 
 bool checkAlignment(const char* query, int queryLength,
-                    const char* target, int targetLength,
+                    const char* target,
                     int score, int pos, EdlibAlignMode mode,
                     unsigned char* alignment, int alignmentLength);
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 void fillRandomly(char* seq, int seqLength, int alphabetLength) {
     for (int i = 0; i < seqLength; i++)
-        seq[i] = rand() % alphabetLength;
+        seq[i] = (char) rand() % alphabetLength;
 }
 
 // Returns true if all tests passed, false otherwise.
@@ -113,10 +113,10 @@ bool runRandomTests(int numTests, EdlibAlignMode mode, bool findAlignment) {
         start = clock();
         EdlibAlignResult result = edlibAlign(
                 query, queryLength, target, targetLength,
-                edlibNewAlignConfig(-1, mode, findAlignment ? EDLIB_TASK_PATH : EDLIB_TASK_DISTANCE));
+                edlibNewAlignConfig(-1, mode, findAlignment ? EDLIB_TASK_PATH : EDLIB_TASK_DISTANCE, NULL, 0));
         timeEdlib += clock() - start;
         if (result.alignment) {
-            if (!checkAlignment(query, queryLength, target, targetLength,
+            if (!checkAlignment(query, queryLength, target,
                                 result.editDistance, result.endLocations[0], mode,
                                 result.alignment, result.alignmentLength)) {
                 failed = true;
@@ -167,14 +167,14 @@ bool runRandomTests(int numTests, EdlibAlignMode mode, bool findAlignment) {
             int scoreExpected = score2 > k ? -1 : score2;
             EdlibAlignResult result3 = edlibAlign(
                     query, queryLength, target, targetLength,
-                    edlibNewAlignConfig(k, mode, findAlignment ? EDLIB_TASK_PATH : EDLIB_TASK_DISTANCE));
+                    edlibNewAlignConfig(k, mode, findAlignment ? EDLIB_TASK_PATH : EDLIB_TASK_DISTANCE, NULL, 0));
             if (result3.editDistance != scoreExpected) {
                 failed = true;
                 printf("For k = %d score was %d but it should have been %d\n",
                        k, result3.editDistance, scoreExpected);
             }
             if (result3.alignment) {
-                if (!checkAlignment(query, queryLength, target, targetLength,
+                if (!checkAlignment(query, queryLength, target,
                                     result3.editDistance, result3.endLocations[0],
                                     mode, result3.alignment, result3.alignmentLength)) {
                     failed = true;
@@ -224,7 +224,7 @@ bool executeTest(const char* query, int queryLength,
                            mode, &scoreSimple, &endLocationsSimple, &numLocationsSimple);
 
     EdlibAlignResult result = edlibAlign(query, queryLength, target, targetLength,
-                                         edlibNewAlignConfig(-1, mode, EDLIB_TASK_PATH));
+                                         edlibNewAlignConfig(-1, mode, EDLIB_TASK_PATH, NULL, 0));
 
     if (result.editDistance != scoreSimple) {
         pass = false;
@@ -244,7 +244,7 @@ bool executeTest(const char* query, int queryLength,
         }
     }
     if (result.alignment) {
-        if (!checkAlignment(query, queryLength, target, targetLength,
+        if (!checkAlignment(query, queryLength, target,
                             result.editDistance, result.endLocations[0], mode,
                             result.alignment, result.alignmentLength)) {
             pass = false;
@@ -421,6 +421,23 @@ bool test11() {
     return r;
 }
 
+bool test12() {
+    EdlibEqualityPair additionalEqualities[24] = {{'R','A'},{'R','G'},{'M','A'},{'M','C'},{'W','A'},{'W','T'},
+                                                  {'S','C'},{'S','G'},{'Y','C'},{'Y','T'},{'K','G'},{'K','T'},
+                                                  {'V','A'},{'V','C'},{'V','G'},{'H','A'},{'H','C'},{'H','T'},
+                                                  {'D','A'},{'D','G'},{'D','T'},{'B','C'},{'B','G'},{'B','T'}};
+    const char* query = "GCATATCAATAAGCGGAGGA";
+    const char* target = "TAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTATCGAATAAACTTGATGGGTTGTCGCTGGCTTCTAGGAGCATGTGCACATCCGTCATTTTTATCCATCCACCTGTGCACCTTTTGTAGTCTTTGGAGGTAATAAGCGTGAATCTATCGAGGTCCTCTGGTCCTCGGAAAGAGGTGTTTGCCATATGGCTCGCCTTTGATACTCGCGAGTTACTCTAAGACTATGTCCTTTCATATACTACGAATGTAATAGAATGTATTCATTGGGCCTCAGTGCCTATAAAACATATACAACTTTCAGCAACGGATCTCTTGGCTCTCGCATCGATGAAGAACGCAGCGAAATGCGATAAGTAATGTGAATTGCAGAATTCAGTGAATCATCGAATCTTTGAACGCACCTTGCGCTCCTTGGTATTCCGAGGAGCATGCCTGTTTGAGTGTCATTAAATTCTCAACCCCTTCCGGTTTTTTGACTGGCTTTGGGGCTTGGATGTGGGGGATTCATTTGCGGGCCTCTGTAGAGGTCGGCTCCCCTGAAATGCATTAGTGGAACCGTTTGCGGTTACCGTCGCTGGTGTGATAACTATCTATGCCAAAGACAAACTGCTCTCTGATAGTTCTGCTTCTAACCGTCCATTTATTGGACAACATTATTATGAACACTTGACCTCAAATCAGGTAGGACTACCCGCTGAACTTAAGCATATCAATAAGCGGAGGAAAAGAAACTAACAAGGATTCCCCTAGTAACTGCGAGTGAAGCGGGAAAAGCTCAAATTTAAAATCTGGCGGTCTTTGGCCGTCCGAGTTGTAATCTAGAGAAGCGACACCCGCGCTGGACCGTGTACAAGTCTCCTGGAATGGAGCGTCATAGAGGGTGAGAATCCCGTCTCTGACACGGACTACCAGGGCTTTGTGGTGCGCTCTCAAAGAGTCGAGTTGTTTGGGAATGCAGCTCTAAATGGGTGGTAAATTCCATCTAAAGCTAAATATTGGCGAGAGACCGATAGCGAACAAGTACCGTGAGGGAAAGATGAAAAGAACTTTGGAAAGAGAGTTAAACAGTACGTGAAATTGCTGAAAGGGAAACGCTTGAAGTCAGTCGCGTTGGCCGGGGATCAGCCTCGCTTTTGCGTGGTGTATTTCCTGGTTGACGGGTCAGCATCAATTTTGACCGCTGGAAAAGGACTTGGGGAATGTGGCATCTTCGGATGTGTTATAGCCCTTTGTCGCATACGGCGGTTGGGATTGAGGAACTCAGCACGCCGCAAGGCCGGGTTTCGACCACGTTCGTGCTTAGGATGCTGGCATAATGGCTTTAATCGACCCGTCTTGAAACACGGACCAAGGAGTCTAACATGCCTGCGAGTGTTTGGGTGGAAAACCCGAGCGCGTAATGAAAGTGAAAGTTGAGATCCCTGTCGTGGGGAGCATCGACGCCCGGACCAGAACTTTTGGGACGGATCTGCGGTAGAGCATGTATGTTGGGACCCGAAAGATGGTGAACTATGCCTGAATAGGGTGAAGCCAGAGGAAACTCTGGTGGAGGCTCGTAGCGATTCTGACGTGCAAATCGATCGTCAAATTTGGGTATAGGGGCGAAAGACTAATCGAACCATCTAGTAGCTGGTTCCTGCCGAAGTTTCCCTCAGGATAGCAGAAACTCATATCAGATTTATGTGGTAAAGCGAATGATTAGAGGCCTTGGGGTTGAAACAACCTTAACCTATTCTCAAACTTTAAATATGTAAGAACGAGCCGTTTCTTGATTGAACCGCTCGGCGATTGAGAGTTTCTAGTGGGCCATTTTTGGTAAGCAGAACTGGCGATGCGGGATGAACCGAACGCGAGGTTAAGGTGCCGGAATTCACGCTCATCAGACACCACAAAAGGTGTTAGTTCATCTAGACAGCAGGACGGTGGCCATGGAAGTCGGAATCCGCTAAGGAGTGTGTAACAACTCACCTGCCGAATGAACTAGCCCTGAAAATGGATGGCGCTTAAGCGTGATACCCATACCTCGCCGTCAGCGTTGAAGTGACGCGCTGACGAGTAGGCAGGCGTGGAGGTCAGTGAAGAAGCCTTGGCAGTGATGCTGGGTGAAACGGCCTCC";
+
+    EdlibAlignResult result = edlibAlign(query, (int) std::strlen(query),
+                                         target, (int) std::strlen(target),
+                                         edlibNewAlignConfig(-1, EDLIB_MODE_HW,EDLIB_TASK_LOC, additionalEqualities, 24));
+    bool pass = result.status == EDLIB_STATUS_OK && result.editDistance == 0;
+    printf(pass ? "\x1B[32m""OK""\x1B[0m\n" : "\x1B[31m""FAIL""\x1B[0m\n");
+    edlibFreeAlignResult(result);
+    return pass;
+}
+
 bool testCigar() {
     unsigned char alignment[] = {EDLIB_EDOP_MATCH, EDLIB_EDOP_MATCH, EDLIB_EDOP_INSERT, EDLIB_EDOP_INSERT,
                                  EDLIB_EDOP_INSERT, EDLIB_EDOP_DELETE, EDLIB_EDOP_INSERT, EDLIB_EDOP_INSERT,
@@ -450,11 +467,31 @@ bool testCigar() {
     return pass;
 }
 
+bool testCustomEqualityRelation() {
+    EdlibEqualityPair additionalEqualities[6] = {{'R','A'},{'R','G'},{'N','A'},{'N','C'},{'N','T'},{'N','G'}};
+
+    bool allPass = true;
+
+    const char* query =  "GTGNRTCARCGAANCTTTN";
+    const char* target = "GTGAGTCATCGAATCTTTGAACGCACCTTGCGCTCCTTGGT";
+
+    printf("Degenerate nucleotides (HW): ");
+    EdlibAlignResult result = edlibAlign(query, 19, target, 41,
+                                         edlibNewAlignConfig(-1, EDLIB_MODE_HW, EDLIB_TASK_PATH,
+                                                             additionalEqualities, 6));
+    bool pass = result.status == EDLIB_STATUS_OK && result.editDistance == 1;
+    edlibFreeAlignResult(result);
+    printf(pass ? "\x1B[32m""OK""\x1B[0m\n" : "\x1B[31m""FAIL""\x1B[0m\n");
+    allPass = allPass && pass;
+
+    return allPass;
+}
+
 bool runTests() {
     // TODO: make this global vector where tests have to add themselves.
-    int numTests = 12;
+    int numTests = 14;
     bool (* tests [])() = {test1, test2, test3, test4, test5, test6,
-                           test7, test8, test9, test10, test11, testCigar};
+                           test7, test8, test9, test10, test11, test12, testCigar, testCustomEqualityRelation};
 
     bool allTestsPassed = true;
     for (int i = 0; i < numTests; i++) {
@@ -470,7 +507,7 @@ bool runTests() {
  * Checks if alignment is correct.
  */
 bool checkAlignment(const char* query, int queryLength,
-                    const char* target, int targetLength,
+                    const char* target,
                     int score, int pos, EdlibAlignMode mode,
                     unsigned char* alignment, int alignmentLength) {
     int alignScore = 0;
