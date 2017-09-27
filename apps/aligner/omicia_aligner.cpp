@@ -13,8 +13,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <queue>
-#include <stdio.h>
 #include "edlib.h"
 
 
@@ -26,10 +24,8 @@ int main() {
     string reference, query;
     stdin_content = "";
 
-
-    int numBestSeqs = 0;
-    int kArg = -1;
-
+//    int numBestSeqs = 0;
+//    int kArg = -1;
 
     while (getline(cin, line)) {
         if (line.length() == 0)
@@ -42,7 +38,7 @@ int main() {
     iss >> query;
 
     EdlibAlignResult result = edlibAlign(query.c_str(), query.length(), reference.c_str(), reference.length(),
-                                         edlibNewAlignConfig(-1, EDLIB_MODE_NW, EDLIB_TASK_PATH));
+                                         edlibNewAlignConfig(-1, EDLIB_MODE_NW, EDLIB_TASK_PATH, NULL, 0));
 
     // printf("distance %d\n", result.editDistance);
     char *cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_EXTENDED);
@@ -54,4 +50,3 @@ int main() {
     free(cigar);
     edlibFreeAlignResult(result);
 }
-

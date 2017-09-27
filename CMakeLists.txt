@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(edlib)
 
+set(MACOSX (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
+
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message("Debug mode")
 endif()
@@ -61,6 +63,10 @@ if (NOT WIN32) # If on windows, do not build binaries that do not support window
   add_executable(edlib-aligner apps/aligner/aligner.cpp)
   target_link_libraries(edlib-aligner edlib_static)
   use_cxx11(edlib-aligner)
+
+  add_executable(omicia_edlib apps/aligner/omicia_aligner.cpp)
+  target_link_libraries(omicia_edlib edlib_static)
+  use_cxx11(omicia_edlib)
 endif()
 
 
