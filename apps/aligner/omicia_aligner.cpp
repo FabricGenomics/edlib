@@ -42,7 +42,7 @@ int main() {
     iss >> query;
 
     EdlibAlignResult result = edlibAlign(query.c_str(), query.length(), reference.c_str(), reference.length(),
-                                         edlibNewAlignConfig(-1, EDLIB_MODE_NW, EDLIB_TASK_PATH));
+                                         edlibNewAlignConfig(-1, EDLIB_MODE_NW, EDLIB_TASK_PATH, NULL, 0));
 
     // printf("distance %d\n", result.editDistance);
     char *cigar = edlibAlignmentToCigar(result.alignment, result.alignmentLength, EDLIB_CIGAR_EXTENDED);
