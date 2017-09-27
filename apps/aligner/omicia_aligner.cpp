@@ -24,10 +24,8 @@ int main() {
     string reference, query;
     stdin_content = "";
 
-
-    int numBestSeqs = 0;
-    int kArg = -1;
-
+//    int numBestSeqs = 0;
+//    int kArg = -1;
 
     while (getline(cin, line)) {
         if (line.length() == 0)
