@@ -13,8 +13,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <queue>
-#include <stdio.h>
 #include "edlib.h"
 
 
@@ -54,4 +52,3 @@ int main() {
     free(cigar);
     edlibFreeAlignResult(result);
 }
-
